@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>/* Embedded mode (?embed) hides the tool's own header/footer/how-to so it nests cleanly inside another page. */if(/[?&#]embed/i.test(location.search + location.hash)){document.documentElement.classList.add("embed");}</script>
 <style>
   :root {
     --bg: #F7F9FC;
@@ -320,6 +321,13 @@
   .steps li { padding-left: 3px; }
   .steps b { color: var(--ink); font-weight: 600; }
   #copyConsole { margin-top: 14px; }
+
+  /* Embedded mode: drop the tool's own chrome so a host page provides the intro. */
+  :root.embed header.top,
+  :root.embed footer.foot,
+  :root.embed .howto { display: none; }
+  :root.embed body::before { display: none; }
+  :root.embed .wrap { padding-top: 16px; }
 </style>
 </head>
 <body>
