@@ -20,8 +20,8 @@
 
   var box = document.createElement("div");
   box.id = "fvtvBox";
-  box.style.cssText = "position:fixed;top:16px;right:16px;z-index:2147483647;width:330px;font:13px/1.5 system-ui,-apple-system,sans-serif;background:#16201c;color:#e8efe9;border:1px solid #26302a;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,.55);padding:16px";
-  box.innerHTML = '<div style="font:600 11px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#3fbf8f;margin-bottom:10px">Finviz → Watchlist</div><div id="fvtvS">Starting…</div>';
+  box.style.cssText = "position:fixed;top:16px;right:16px;z-index:2147483647;width:330px;font:13px/1.5 system-ui,-apple-system,sans-serif;background:#0C1E42;color:#F1F5F9;border:1px solid #22345C;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,.55);padding:16px";
+  box.innerHTML = '<div style="font:600 11px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#22D3EE;margin-bottom:10px">Finviz → Watchlist</div><div id="fvtvS">Starting…</div>';
   document.body.appendChild(box);
   var S = box.querySelector("#fvtvS");
 
@@ -30,9 +30,9 @@
   function done() {
     var line = list.join(",");
     var over = list.length > 1000 ? ' · <span style="color:#e0b04a">over TradingView’s 1000 cap, split it</span>' : "";
-    S.innerHTML = '<div><b style="font:600 22px ui-monospace,monospace;color:#3fbf8f">' + list.length + '</b> tickers' + over + '</div>' +
-      '<textarea readonly style="width:100%;height:88px;margin-top:10px;box-sizing:border-box;background:#0e1512;color:#e8efe9;border:1px solid #26302a;border-radius:8px;padding:8px;font:12px/1.6 ui-monospace,monospace;resize:vertical;word-break:break-all">' + esc(line) + '</textarea>' +
-      '<div style="display:flex;gap:8px;margin-top:10px"><button id="fvtvC" style="flex:1;cursor:pointer;font:600 13px system-ui;background:#3fbf8f;color:#06110c;border:0;border-radius:8px;padding:9px">Copy</button><button id="fvtvD" style="flex:1;cursor:pointer;font:600 13px system-ui;background:transparent;color:#3fbf8f;border:1px solid #3fbf8f;border-radius:8px;padding:9px">Download</button><button id="fvtvX" style="cursor:pointer;background:transparent;color:#8b9a90;border:1px solid #26302a;border-radius:8px;padding:9px 11px">✕</button></div>';
+    S.innerHTML = '<div><b style="font:600 22px ui-monospace,monospace;color:#22D3EE">' + list.length + '</b> tickers' + over + '</div>' +
+      '<textarea readonly style="width:100%;height:88px;margin-top:10px;box-sizing:border-box;background:#020617;color:#F1F5F9;border:1px solid #22345C;border-radius:8px;padding:8px;font:12px/1.6 ui-monospace,monospace;resize:vertical;word-break:break-all">' + esc(line) + '</textarea>' +
+      '<div style="display:flex;gap:8px;margin-top:10px"><button id="fvtvC" style="flex:1;cursor:pointer;font:600 13px system-ui;background:#22D3EE;color:#06110c;border:0;border-radius:8px;padding:9px">Copy</button><button id="fvtvD" style="flex:1;cursor:pointer;font:600 13px system-ui;background:transparent;color:#22D3EE;border:1px solid #22D3EE;border-radius:8px;padding:9px">Download</button><button id="fvtvX" style="cursor:pointer;background:transparent;color:#94A3B8;border:1px solid #22345C;border-radius:8px;padding:9px 11px">✕</button></div>';
     var ta = box.querySelector("textarea");
     box.querySelector("#fvtvC").onclick = function () {
       ta.focus(); ta.select(); var ok = false;
@@ -61,7 +61,7 @@
         setTimeout(function () { step(r + 20); }, 500); // gentle
       })
       .catch(function (err) {
-        S.innerHTML = "Stopped: " + esc(err.message) + '<br><span style="color:#8b9a90">' + list.length + " collected so far.</span>";
+        S.innerHTML = "Stopped: " + esc(err.message) + '<br><span style="color:#94A3B8">' + list.length + " collected so far.</span>";
         if (list.length) done();
       });
   }
