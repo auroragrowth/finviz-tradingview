@@ -105,6 +105,46 @@
   h1 .arrow { color: var(--accent); font-family: var(--mono); font-weight: 500; }
   .sub { color: var(--muted); font-size: 14.5px; max-width: 62ch; }
 
+  /* How-to pop-down */
+  .howto {
+    margin-top: 22px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .howto > summary {
+    cursor: pointer; list-style: none; padding: 14px 18px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--ui); font-size: 14.5px; font-weight: 600; color: var(--ink);
+    background: var(--accent-soft);
+  }
+  .howto > summary::-webkit-details-marker { display: none; }
+  .howto > summary::before {
+    content: "▸"; color: var(--accent); font-family: var(--mono);
+    display: inline-block; transition: transform .15s;
+  }
+  .howto[open] > summary::before { transform: rotate(90deg); }
+  .howto > summary .tag {
+    margin-left: auto; font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+  }
+  .howto-body { padding: 16px 18px 20px; font-size: 13.5px; color: var(--ink); }
+  .howto-body h4 {
+    margin: 16px 0 9px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  .howto-body h4:first-child { margin-top: 0; }
+  .howto-body ol { margin: 0; padding-left: 22px; display: grid; gap: 9px; }
+  .howto-body ol li { padding-left: 3px; }
+  .howto-body b { font-weight: 600; }
+  .howto-body kbd {
+    font-family: var(--mono); font-size: 11.5px; background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px;
+  }
+  .howto-setup {
+    background: var(--accent-soft); border-radius: 10px; padding: 11px 14px; margin: 0 0 4px;
+    font-size: 13px; line-height: 1.55;
+  }
+  .howto-alt { color: var(--muted); margin: 6px 0 0; }
+
   .grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
     margin-top: 24px; align-items: start;
@@ -291,6 +331,25 @@
       <p class="sub">Paste messy Finviz screener output — a Tickers-view block, a plain list, or several pages at once. Get one clean comma-separated line, ready to save as a <code style="font-family:var(--mono)">.txt</code> and upload to a TradingView watchlist.</p>
     </div>
   </header>
+
+  <details class="howto">
+    <summary>How to use <span class="tag">Start here</span></summary>
+    <div class="howto-body">
+      <div class="howto-setup"><b>One-time setup:</b> in the <b>Auto-collect</b> panel below, drag the green <b>▸ Finviz → Watchlist</b> button up onto your browser's bookmarks bar. You only ever do this once.</div>
+
+      <h4>Every time — from screen to watchlist</h4>
+      <ol>
+        <li>Open your screen on <b>Finviz</b> — click an <b>Open in Finviz</b> link in box 1, or open your own saved screen.</li>
+        <li>On that Finviz page, click your <b>Finviz → Watchlist</b> bookmark. A small panel appears with every ticker — click <b>Copy</b>.</li>
+        <li>In <b>TradingView</b>, open the watchlist you want to update.</li>
+        <li><b>Clear it first:</b> click the <b>⋯</b> menu at the top-right of the watchlist → <b>Clear the list</b>. Adding symbols <i>appends</i> to a list rather than replacing it, so clear it (or use a fresh, empty list) to avoid mixing in last week's names.</li>
+        <li>Click <b>+ Add symbol</b>, then paste (<kbd>⌘V</kbd>) the list you copied. Every ticker drops in at once — <b>no file to download or upload</b>.</li>
+      </ol>
+
+      <h4>No bookmarklet? Paste method</h4>
+      <p class="howto-alt">On Finviz, switch the view to <b>Tickers</b>, copy the block, paste it into <b>box 2</b> below, and press <b>Copy list</b> — then do steps 3–5 above. (Downloading a <code style="font-family:var(--mono)">.txt</code> and using TradingView's <b>Import list…</b> still works too, if you prefer files.)</p>
+    </div>
+  </details>
 
   <div class="grid">
     <!-- LEFT: input + finviz helper -->
