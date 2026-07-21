@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finviz → TradingView watchlist</title>
+<style>
+  :root {
+    --bg: #f7f8f6;
+    --surface: #ffffff;
+    --surface-2: #f1f3f0;
+    --ink: #14201b;
+    --muted: #5c6b63;
+    --border: #e2e6e1;
+    --accent: #0f7a5a;
+    --accent-ink: #ffffff;
+    --accent-soft: #e4f2ec;
+    --good: #0f7a5a;
+    --warn: #a9720a;
+    --warn-soft: #f6ecd6;
+    --bad: #c0442f;
+    --bad-soft: #f6e3df;
+    --shadow: 0 1px 2px rgba(20,32,27,.06), 0 8px 24px rgba(20,32,27,.05);
+    --radius: 12px;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1512;
+      --surface: #16201c;
+      --surface-2: #1c2723;
+      --ink: #e8efe9;
+      --muted: #8b9a90;
+      --border: #26302a;
+      --accent: #3fbf8f;
+      --accent-ink: #06110c;
+      --accent-soft: #16302549;
+      --good: #3fbf8f;
+      --warn: #e0b04a;
+      --warn-soft: #2c2513;
+      --bad: #e07a63;
+      --bad-soft: #2e1a15;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f8f6; --surface: #ffffff; --surface-2: #f1f3f0; --ink: #14201b;
+    --muted: #5c6b63; --border: #e2e6e1; --accent: #0f7a5a; --accent-ink: #ffffff;
+    --accent-soft: #e4f2ec; --good: #0f7a5a; --warn: #a9720a; --warn-soft: #f6ecd6;
+    --bad: #c0442f; --bad-soft: #f6e3df;
+    --shadow: 0 1px 2px rgba(20,32,27,.06), 0 8px 24px rgba(20,32,27,.05);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1512; --surface: #16201c; --surface-2: #1c2723; --ink: #e8efe9;
+    --muted: #8b9a90; --border: #26302a; --accent: #3fbf8f; --accent-ink: #06110c;
+    --accent-soft: #16302549; --good: #3fbf8f; --warn: #e0b04a; --warn-soft: #2c2513;
+    --bad: #e07a63; --bad-soft: #2e1a15;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--ui);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 64px; }
+
+  header.top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 6px;
+  }
+  .brand { display: flex; flex-direction: column; gap: 4px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  h1 {
+    margin: 0; font-size: clamp(24px, 3.5vw, 34px); font-weight: 650;
+    letter-spacing: -.02em; text-wrap: balance;
+  }
+  h1 .arrow { color: var(--accent); font-family: var(--mono); font-weight: 500; }
+  .sub { color: var(--muted); font-size: 14.5px; max-width: 62ch; }
+
+  .grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin-top: 24px; align-items: start;
+  }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 20px; }
+  .card h2 {
+    margin: 0 0 2px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); font-family: var(--mono); font-weight: 600;
+  }
+  .card .hint { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+
+  /* Presets */
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    appearance: none; cursor: pointer; font: inherit; font-size: 13px;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--ink);
+    padding: 7px 13px; border-radius: 999px; transition: .12s ease;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip[aria-pressed="true"] {
+    background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+  }
+  .chip .n { font-family: var(--mono); opacity: .7; font-size: 12px; }
+  .chip[aria-pressed="true"] .n { opacity: .85; }
+
+  .screen-panel {
+    margin-top: 14px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface-2); padding: 14px; font-size: 13px;
+  }
+  .screen-panel[hidden] { display: none; }
+  .screen-panel .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .screen-panel .filters { margin: 10px 0 0; padding: 0; list-style: none;
+    columns: 2; column-gap: 18px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .screen-panel .filters li { break-inside: avoid; padding: 1.5px 0; }
+  .screen-panel .filters li b { color: var(--ink); font-weight: 600; }
+
+  .pages { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .pagelink {
+    font-family: var(--mono); font-size: 12px; text-decoration: none;
+    color: var(--accent); border: 1px solid var(--border); background: var(--surface);
+    padding: 4px 9px; border-radius: 7px; transition: .12s;
+  }
+  .pagelink:hover { border-color: var(--accent); }
+  .pages .lead { font-family: var(--ui); color: var(--muted); margin-right: 2px; }
+  .pages .more { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }
+  .pages .more input {
+    width: 46px; font-family: var(--mono); font-size: 12px; text-align: center;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+    color: var(--ink); padding: 3px 4px;
+  }
+  .note-inline { color: var(--muted); font-size: 11.5px; margin: 8px 0 0; }
+
+  textarea#input {
+    width: 100%; min-height: 240px; resize: vertical; margin-top: 14px;
+    font-family: var(--mono); font-size: 13px; line-height: 1.6;
+    color: var(--ink); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+  }
+  textarea#input:focus, input:focus-visible, .chip:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .input-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .ghost {
+    appearance: none; cursor: pointer; font: inherit; font-size: 12.5px;
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    padding: 6px 11px; border-radius: 8px; transition: .12s;
+  }
+  .ghost:hover { color: var(--ink); border-color: var(--accent); }
+
+  /* Options */
+  .opt-row { display: flex; align-items: flex-start; gap: 11px; padding: 12px 0; }
+  .opt-row + .opt-row { border-top: 1px solid var(--border); }
+  .opt-main { flex: 1; min-width: 0; }
+  .opt-main label { font-size: 13.5px; font-weight: 550; display: block; }
+  .opt-main .desc { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .field {
+    font-family: var(--mono); font-size: 13px; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 10px; width: 100%;
+  }
+  .field.small { max-width: 130px; text-transform: uppercase; }
+  /* toggle */
+  .switch { position: relative; display: inline-block; width: 40px; height: 23px; flex: none; margin-top: 1px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; cursor: pointer; background: var(--border);
+    border-radius: 999px; transition: .18s;
+  }
+  .slider::before {
+    content: ""; position: absolute; height: 17px; width: 17px; left: 3px; top: 3px;
+    background: var(--surface); border-radius: 50%; transition: .18s; box-shadow: 0 1px 2px rgba(0,0,0,.25);
+  }
+  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider::before { transform: translateX(17px); }
+  .prefix-warn {
+    font-size: 11.5px; color: var(--warn); background: var(--warn-soft);
+    border-radius: 7px; padding: 7px 10px; margin-top: 8px;
+  }
+  .prefix-warn[hidden] { display: none; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat {
+    border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px;
+    background: var(--surface-2);
+  }
+  .stat .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted); }
+  .stat .v { font-family: var(--mono); font-size: 26px; font-variant-numeric: tabular-nums;
+    font-weight: 600; margin-top: 2px; letter-spacing: -.01em; }
+  .stat.state-good .v { color: var(--good); }
+  .stat.state-warn { background: var(--warn-soft); border-color: transparent; }
+  .stat.state-warn .v, .stat.state-warn .k { color: var(--warn); }
+  .stat.state-bad .v { color: var(--bad); }
+  .stat.dim .v { color: var(--muted); }
+
+  .cap-alert {
+    margin-top: 12px; font-size: 12.5px; border-radius: 9px; padding: 10px 12px;
+    background: var(--warn-soft); color: var(--warn); border: 1px solid transparent;
+  }
+  .cap-alert[hidden] { display: none; }
+  #pasteAlert { background: var(--bad-soft); color: var(--bad); }
+
+  .out-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; }
+  .out-head .lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); }
+  textarea#output {
+    width: 100%; min-height: 150px; resize: vertical; margin-top: 8px;
+    font-family: var(--mono); font-size: 13px; line-height: 1.7; letter-spacing: .01em;
+    color: var(--ink); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; word-break: break-all;
+  }
+  .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .btn {
+    appearance: none; cursor: pointer; font: inherit; font-weight: 550; font-size: 14px;
+    border-radius: 9px; padding: 10px 18px; border: 1px solid var(--accent);
+    background: var(--accent); color: var(--accent-ink); transition: .12s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+  .btn.secondary { background: transparent; color: var(--accent); }
+  .btn.secondary:hover { background: var(--accent-soft); }
+  .copied-flash { color: var(--good); font-size: 12.5px; align-self: center; opacity: 0; transition: opacity .15s; font-family: var(--mono); }
+  .copied-flash.show { opacity: 1; }
+
+  footer.foot {
+    margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 12.5px; display: grid; gap: 6px;
+  }
+  footer.foot b { color: var(--ink); font-weight: 600; }
+  footer.foot code { font-family: var(--mono); background: var(--surface-2);
+    padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+  a { color: var(--accent); }
+
+  .bmk {
+    display: inline-flex; align-items: center; gap: 7px; margin: 4px 0;
+    font-family: var(--mono); font-size: 14px; font-weight: 600; text-decoration: none;
+    background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent);
+    padding: 9px 16px; border-radius: 9px; cursor: grab; user-select: none;
+    box-shadow: var(--shadow);
+  }
+  .bmk:active { cursor: grabbing; }
+  .steps { margin: 14px 0 0; padding-left: 20px; color: var(--muted); font-size: 12.5px; display: grid; gap: 6px; }
+  .steps li { padding-left: 3px; }
+  .steps b { color: var(--ink); font-weight: 600; }
+  #copyConsole { margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Screener → Watchlist</span>
+      <h1>Finviz <span class="arrow">→</span> TradingView</h1>
+      <p class="sub">Paste messy Finviz screener output — a Tickers-view block, a plain list, or several pages at once. Get one clean comma-separated line, ready to save as a <code style="font-family:var(--mono)">.txt</code> and upload to a TradingView watchlist.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: input + finviz helper -->
+    <div class="col-left">
+      <section class="card">
+        <h2>1 · Run your screen</h2>
+        <p class="hint">Pick a saved screen, open it in Finviz, switch the view to <b>Tickers</b>, and copy each page into the box below.</p>
+        <div class="presets" id="presets">
+          <button class="chip" data-preset="f13" aria-pressed="false">F13 <span class="n">strict</span></button>
+          <button class="chip" data-preset="vax" aria-pressed="false">Flexible VAX <span class="n">looser</span></button>
+        </div>
+
+        <div class="screen-panel" id="screenPanel" hidden>
+          <div class="row">
+            <a class="pagelink" id="openScreen" href="#" target="_blank" rel="noopener noreferrer">Open page 1 in Finviz ↗</a>
+            <span class="note-inline" id="screenName"></span>
+          </div>
+          <ul class="filters" id="screenFilters"></ul>
+          <div class="pages" id="pageLinks"></div>
+          <p class="note-inline">Opens the <b>Tickers</b> view (<code style="font-family:var(--mono)">v=410</code>) with your filters applied. If it lands on a different layout, just choose <b>Tickers</b> from the view dropdown — the filters carry over. Copy each page's comma block and paste them all below; duplicates between pages are removed automatically.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2 · Paste screener output</h2>
+        <p class="hint">Finviz Elite CSV, a Tickers block, or a bare list — comma / space / newline separated. Paste multiple pages together.</p>
+        <textarea id="input" spellcheck="false" placeholder="AAPL, MSFT, NVDA, GOOGL …&#10;&#10;— or paste a Finviz Elite CSV with a Ticker / Exchange column —&#10;&#10;No.,Ticker,Company,...&#10;1,AAPL,Apple Inc.,...&#10;2,MSFT,Microsoft Corp.,..."></textarea>
+        <div class="input-actions">
+          <button class="ghost" id="pasteBtn" type="button">Paste from clipboard</button>
+          <button class="ghost" id="clearBtn" type="button">Clear</button>
+          <button class="ghost" id="sampleBtn" type="button">Load sample</button>
+        </div>
+      </section>
+
+      <section class="card" id="autoCard">
+        <h2>Auto-collect · optional</h2>
+        <p class="hint">Skip the copy-paste. Drag this button to your bookmarks bar once; then, on your Finviz screener page, click it — it pages through every result, de-dupes, and shows the finished list ready to Copy or Download.</p>
+        <a class="bmk" id="bmk" href="#" onclick="return false">▸ Finviz → Watchlist</a>
+        <ol class="steps">
+          <li>Drag the green button up to your browser's bookmarks bar.</li>
+          <li>Open your screen in Finviz (use an <b>Open in Finviz</b> link above) — any view is fine.</li>
+          <li>Click the bookmark. A panel shows the full list — hit <b>Copy</b> or <b>Download</b>, then paste it above if you want the extras here (exchange prefix, cap check).</li>
+        </ol>
+        <button class="ghost" id="copyConsole" type="button">Can't drag it? Copy the console version</button>
+        <p class="note-inline" id="consoleMsg" hidden></p>
+        <div class="prefix-warn" style="display:block;margin-top:14px">Fair-use note: this pages through Finviz's free results automatically, which their <code style="font-family:var(--mono)">robots.txt</code> asks bots to avoid. Keep it to occasional personal use — it runs gently (~one page every ½ second) in your own logged-in browser. For heavy or fully-sanctioned automation, Finviz Elite's export API is the proper route.</div>
+      </section>
+    </div>
+
+    <!-- RIGHT: options + output -->
+    <div class="col-right">
+      <section class="card">
+        <h2>Result</h2>
+        <div class="stats">
+          <div class="stat" id="statUnique"><div class="k">Symbols out</div><div class="v" id="vUnique">0</div></div>
+          <div class="stat dim" id="statFound"><div class="k">Tickers found</div><div class="v" id="vFound">0</div></div>
+          <div class="stat dim" id="statDupes"><div class="k">Duplicates removed</div><div class="v" id="vDupes">0</div></div>
+          <div class="stat dim" id="statCap"><div class="k">Cap (per list)</div><div class="v" id="vCap">0/1000</div></div>
+        </div>
+        <div class="cap-alert" id="capAlert" hidden></div>
+        <div class="cap-alert" id="pasteAlert" hidden></div>
+
+        <div class="out-head">
+          <span class="lbl">Output · comma-separated</span>
+          <span class="copied-flash" id="copiedFlash">Copied ✓</span>
+        </div>
+        <textarea id="output" readonly spellcheck="false" placeholder="Your cleaned, de-duplicated list appears here…"></textarea>
+        <div class="actions">
+          <button class="btn" id="copyBtn" type="button" disabled>Copy list</button>
+          <button class="btn secondary" id="downloadBtn" type="button" disabled>Download .txt</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Options</h2>
+        <div class="opt-row">
+          <div class="opt-main">
+            <label for="filename">Output filename</label>
+            <div class="desc">Name it to match the watchlist.</div>
+          </div>
+          <input class="field" id="filename" value="watchlist.txt" style="max-width:180px" />
+        </div>
+        <div class="opt-row">
+          <div class="switch">
+            <input type="checkbox" id="prefixToggle" />
+            <span class="slider"></span>
+          </div>
+          <div class="opt-main">
+            <label for="prefixToggle">Force one exchange prefix</label>
+            <div class="desc">Prepend <code style="font-family:var(--mono)">EXCHANGE:</code> to every ticker without one. Off by default.</div>
+            <input class="field small" id="prefixValue" value="NASDAQ" placeholder="NASDAQ" disabled style="margin-top:8px" />
+            <div class="prefix-warn" id="prefixWarn" hidden>Only correct if the whole list sits on <b>one</b> exchange. Your F13 / VAX screens mix NYSE &amp; NASDAQ, so leave this off — bare US tickers resolve on their own, and any exchange found in a pasted CSV is kept.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div><b>Verified against TradingView's help centre:</b> upload wants a <code>.txt</code> file, symbols <b>comma-separated</b>, with an <code>EXCHANGE:TICKER</code> prefix recommended (bare US tickers usually resolve too). Hard cap is <b>1,000 symbols per watchlist</b> — split anything larger.</div>
+    <div>Import path in TradingView: click the watchlist name in the right toolbar → <b>Import list…</b> → pick your <code>.txt</code>.</div>
+    <div>Everything runs in your browser — nothing is sent anywhere.</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var FINVIZ_BASE = "https://finviz.com/screener.ashx?";
+  var PRESETS = {
+    f13: {
+      name: "F13 — strict quality-growth",
+      file: "f13.txt",
+      query: "v=150&f=cap_midover,fa_curratio_o2,fa_debteq_u0.4,fa_epsyoy_o10,fa_epsyoy1_o10,fa_estltgrowth_o10,fa_peg_u2,fa_quickratio_o1,fa_roa_o10,fa_roe_o10,fa_roi_o10,sh_instown_o30&o=-marketcap&c=0,1,2,6,78,17,18,20,32,33,34,36,35,38,9,28,3",
+      filters: [
+        ["Market cap", "mid ($2bn) & over"],
+        ["Current ratio", "> 2"],
+        ["Debt / equity", "< 0.4"],
+        ["EPS growth this yr", "> 10%"],
+        ["EPS growth next yr", "> 10%"],
+        ["EPS growth 5yr", "> 10%"],
+        ["PEG", "< 2"],
+        ["Quick ratio", "> 1"],
+        ["Return on assets", "> 10%"],
+        ["Return on equity", "> 10%"],
+        ["Return on invest.", "> 10%"],
+        ["Inst. ownership", "> 30%"]
+      ]
+    },
+    vax: {
+      name: "Flexible VAX — looser, more names",
+      file: "flexible-vax.txt",
+      query: "v=150&f=cap_midover,fa_curratio_o1.5,fa_debteq_u0.5,fa_epsyoy_o10,fa_epsyoy1_o10,fa_estltgrowth_o10,fa_quickratio_o0.5,fa_roa_o5,fa_roe_o5,fa_roi_o5,sh_instown_o30&o=-marketcap&c=0,1,2,6,78,17,18,20,32,33,34,36,35,38,9,28,3",
+      filters: [
+        ["Market cap", "mid ($2bn) & over"],
+        ["Current ratio", "> 1.5"],
+        ["Debt / equity", "< 0.5"],
+        ["EPS growth this yr", "> 10%"],
+        ["EPS growth next yr", "> 10%"],
+        ["EPS growth 5yr", "> 10%"],
+        ["Quick ratio", "> 0.5"],
+        ["Return on assets", "> 5%"],
+        ["Return on equity", "> 5%"],
+        ["Return on invest.", "> 5%"],
+        ["Inst. ownership", "> 30%"]
+      ]
+    }
+  };
+  var CAP = 1000;
+
+  // ---- parser (adapted from the brief's reference) ----
+  function splitCsvLine(line) {
+    var o = [], c = "", q = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (ch === '"') { if (q && line[i + 1] === '"') { c += '"'; i++; } else q = !q; }
+      else if (ch === "," && !q) { o.push(c); c = ""; }
+      else c += ch;
+    }
+    o.push(c);
+    return o.map(function (s) { return s.trim(); });
+  }
+  function isTicker(t) { return /^[A-Z]{1,6}([.\-][A-Z]{1,4})?$/.test(t); }
+  function looksLikeCode(t) { return /data:|script-src|style-src|https?:\/\/|<\/?[a-z]|function\s*\(/i.test(t); }
+
+  function extract(text) {
+    var lines = text.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+    if (!lines.length) return [];
+    var hIdx = -1, tCol = -1, eCol = -1;
+    for (var i = 0; i < Math.min(lines.length, 3); i++) {
+      var cells = splitCsvLine(lines[i]); var tc = -1, ec = -1;
+      cells.forEach(function (cell, j) {
+        var h = cell.toLowerCase();
+        if (tc === -1 && (h === "ticker" || h === "symbol")) tc = j;
+        if (ec === -1 && h === "exchange") ec = j;
+      });
+      if (tc !== -1) { hIdx = i; tCol = tc; eCol = ec; break; }
+    }
+    var res = [];
+    if (hIdx !== -1) {
+      for (var r = hIdx + 1; r < lines.length; r++) {
+        var row = splitCsvLine(lines[r]);
+        if (row.length <= tCol) continue;
+        var tk = (row[tCol] || "").toUpperCase();
+        if (!tk || !isTicker(tk)) continue;
+        var ex = (eCol !== -1 && row[eCol]) ? row[eCol].toUpperCase() : "";
+        res.push({ ticker: tk, exchange: ex });
+      }
+    } else {
+      text.toUpperCase().split(/[^A-Z.\-]+/).forEach(function (tok) {
+        if (tok && isTicker(tok)) res.push({ ticker: tok, exchange: "" });
+      });
+    }
+    return res;
+  }
+
+  // ---- state / DOM ----
+  var $ = function (id) { return document.getElementById(id); };
+  var input = $("input"), output = $("output");
+  var prefixToggle = $("prefixToggle"), prefixValue = $("prefixValue"), prefixWarn = $("prefixWarn");
+  var filename = $("filename");
+  var copyBtn = $("copyBtn"), downloadBtn = $("downloadBtn");
+  var activePreset = null;
+
+  function normalizeExchange(ex) {
+    if (!ex) return "";
+    if (/nasdaq|ngm|ngs|ncm/.test(ex.toLowerCase())) return "NASDAQ";
+    if (/nyse|new york|arca|amex|nyq/.test(ex.toLowerCase())) return "NYSE";
+    return ex.replace(/[^A-Z]/g, "");
+  }
+
+  function compute() {
+    var val = input.value;
+    var pasteAlert = $("pasteAlert");
+    if (val.trim() && looksLikeCode(val)) {
+      pasteAlert.hidden = false;
+      pasteAlert.innerHTML = "⚠ That looks like a URL or page code, not a ticker list — don't paste the tool's address or source here. Use the green <b>Finviz → Watchlist</b> bookmarklet, or copy the tickers from Finviz's <b>Tickers</b> view.";
+      $("vFound").textContent = "0"; $("vUnique").textContent = "0"; $("vDupes").textContent = "0";
+      $("vCap").textContent = "0/" + CAP;
+      output.value = "";
+      setState($("statUnique"), "dim"); setState($("statDupes"), "dim"); setState($("statCap"), "dim");
+      $("capAlert").hidden = true;
+      copyBtn.disabled = true; downloadBtn.disabled = true;
+      return;
+    }
+    pasteAlert.hidden = true;
+    var raw = extract(val);
+    var found = raw.length;
+    var seen = Object.create(null);
+    var forcePrefix = prefixToggle.checked ? (prefixValue.value || "").trim().toUpperCase().replace(/[^A-Z]/g, "") : "";
+    var out = [];
+    for (var i = 0; i < raw.length; i++) {
+      var t = raw[i].ticker;
+      if (seen[t]) continue;          // de-dup on ticker core, keep first-seen
+      seen[t] = true;
+      var sym = t;
+      var ex = normalizeExchange(raw[i].exchange);
+      if (ex) sym = ex + ":" + t;
+      else if (forcePrefix) sym = forcePrefix + ":" + t;
+      out.push(sym);
+    }
+    var unique = out.length;
+    var dupes = found - unique;
+    var line = out.join(",");
+    output.value = line;
+
+    $("vFound").textContent = found;
+    $("vUnique").textContent = unique;
+    $("vDupes").textContent = dupes;
+    $("vCap").textContent = unique + "/" + CAP;
+
+    setState($("statUnique"), unique > 0 ? "state-good" : "dim");
+    setState($("statDupes"), dupes > 0 ? "state-warn" : "dim");
+    var capEl = $("statCap"), capAlert = $("capAlert");
+    if (unique > CAP) {
+      setState(capEl, "state-bad");
+      capAlert.hidden = false;
+      capAlert.textContent = "Over the 1,000-symbol limit by " + (unique - CAP) + ". TradingView will reject the extra symbols — split this into more than one watchlist.";
+    } else {
+      setState(capEl, unique > 0 ? "state-good" : "dim");
+      capAlert.hidden = true;
+    }
+
+    var has = unique > 0;
+    copyBtn.disabled = !has;
+    downloadBtn.disabled = !has;
+  }
+
+  function setState(el, cls) {
+    el.classList.remove("state-good", "state-warn", "state-bad", "dim");
+    if (cls) el.classList.add(cls);
+  }
+
+  // ---- presets ----
+  function fixFilename(base) {
+    var v = (base || "").trim();
+    if (!v) return "";
+    if (!/\.txt$/i.test(v)) v += ".txt";
+    return v;
+  }
+  function tickersViewURL(query, r) {
+    var q = query.replace(/(^|&)v=\d+/, "$1v=410"); // Tickers view
+    if (r && r > 1) q += "&r=" + r;
+    return FINVIZ_BASE + q;
+  }
+  function buildPageLinks(preset) {
+    var box = $("pageLinks");
+    box.innerHTML = "";
+    var lead = document.createElement("span");
+    lead.className = "lead"; lead.textContent = "Pages:";
+    box.appendChild(lead);
+    var count = Math.max(1, Math.min(50, parseInt(pageCountInput.value, 10) || 5));
+    for (var p = 1; p <= count; p++) {
+      var a = document.createElement("a");
+      a.className = "pagelink";
+      a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.href = tickersViewURL(preset.query, (p - 1) * 20 + 1);
+      a.textContent = p;
+      box.appendChild(a);
+    }
+    box.appendChild(pageCountWrap);
+  }
+
+  var pageCountWrap = document.createElement("span");
+  pageCountWrap.className = "more";
+  pageCountWrap.innerHTML = '<span>show</span>';
+  var pageCountInput = document.createElement("input");
+  pageCountInput.type = "number"; pageCountInput.min = "1"; pageCountInput.max = "50"; pageCountInput.value = "5";
+  pageCountInput.setAttribute("aria-label", "number of page links");
+  pageCountWrap.appendChild(pageCountInput);
+  var pgLabel = document.createElement("span"); pgLabel.textContent = "pages"; pageCountWrap.appendChild(pgLabel);
+
+  function selectPreset(key) {
+    var chips = document.querySelectorAll(".chip");
+    if (activePreset === key) {   // toggle off
+      activePreset = null;
+      chips.forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+      $("screenPanel").hidden = true;
+      return;
+    }
+    activePreset = key;
+    chips.forEach(function (c) { c.setAttribute("aria-pressed", c.dataset.preset === key ? "true" : "false"); });
+    var p = PRESETS[key];
+    $("screenPanel").hidden = false;
+    $("screenName").textContent = p.name;
+    $("openScreen").href = tickersViewURL(p.query, 1);
+    var ul = $("screenFilters");
+    ul.innerHTML = "";
+    p.filters.forEach(function (f) {
+      var li = document.createElement("li");
+      li.innerHTML = "<b>" + f[0] + "</b> " + f[1];
+      ul.appendChild(li);
+    });
+    buildPageLinks(p);
+    if (filename.value === "watchlist.txt" || /^(f13|flexible-vax)\.txt$/.test(filename.value)) {
+      filename.value = p.file;
+    }
+  }
+
+  // ---- events ----
+  document.getElementById("presets").addEventListener("click", function (e) {
+    var chip = e.target.closest(".chip");
+    if (chip) selectPreset(chip.dataset.preset);
+  });
+  pageCountInput.addEventListener("input", function () {
+    if (activePreset) buildPageLinks(PRESETS[activePreset]);
+  });
+  input.addEventListener("input", compute);
+  prefixToggle.addEventListener("change", function () {
+    prefixValue.disabled = !prefixToggle.checked;
+    prefixWarn.hidden = !prefixToggle.checked;
+    compute();
+  });
+  prefixValue.addEventListener("input", compute);
+
+  $("clearBtn").addEventListener("click", function () { input.value = ""; compute(); input.focus(); });
+  $("sampleBtn").addEventListener("click", function () {
+    input.value = "AAPL, MSFT, NVDA, GOOGL, GOOGL, AMZN META\nAVGO  COST\nBRK.B, JPM, V, MA, MSFT";
+    compute();
+  });
+  $("pasteBtn").addEventListener("click", function () {
+    if (!navigator.clipboard || !navigator.clipboard.readText) { input.focus(); return; }
+    navigator.clipboard.readText().then(function (txt) {
+      input.value = input.value ? (input.value.replace(/\s*$/, "") + "\n" + txt) : txt;
+      compute();
+    }).catch(function () { input.focus(); });
+  });
+
+  copyBtn.addEventListener("click", function () {
+    var text = output.value;
+    var flash = function () {
+      var f = $("copiedFlash"); f.classList.add("show");
+      setTimeout(function () { f.classList.remove("show"); }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(flash).catch(function () { output.select(); document.execCommand("copy"); flash(); });
+    } else { output.select(); document.execCommand("copy"); flash(); }
+  });
+  downloadBtn.addEventListener("click", function () {
+    var name = fixFilename(filename.value) || "watchlist.txt";
+    filename.value = name;
+    var blob = new Blob([output.value], { type: "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+
+  compute();
+})();
+</script>
+
+<script>
+/* Auto-collect bookmarklet. fvtvCollect() is never called here — it is
+   stringified onto the bookmark's href and runs on finviz.com. */
+(function () {
+  function fvtvCollect() {
+    if (!/(^|\.)finviz\.com$/.test(location.hostname) || !/screener\.ashx/i.test(location.pathname)) {
+      alert("Open your Finviz screener first (finviz.com/screener.ashx with your filters), then click this."); return;
+    }
+    var params = new URLSearchParams(location.search);
+    params.set("v", "111"); params.delete("r");
+    var baseQ = params.toString();
+    var seen = Object.create(null), list = [], pages = 0, MAX = 100;
+    var box = document.createElement("div");
+    box.style.cssText = "position:fixed;top:16px;right:16px;z-index:2147483647;width:330px;font:13px/1.5 system-ui,-apple-system,sans-serif;background:#16201c;color:#e8efe9;border:1px solid #26302a;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,.55);padding:16px";
+    box.innerHTML = '<div style="font:600 11px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#3fbf8f;margin-bottom:10px">Finviz → Watchlist</div><div id="fvtvS">Starting…</div>';
+    document.body.appendChild(box);
+    var S = box.querySelector("#fvtvS");
+    function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function done() {
+      var line = list.join(",");
+      var over = list.length > 1000 ? ' · <span style="color:#e0b04a">over TradingView’s 1000 cap, split it</span>' : "";
+      S.innerHTML = '<div><b style="font:600 22px ui-monospace,monospace;color:#3fbf8f">' + list.length + '</b> tickers' + over + '</div>' +
+        '<textarea readonly style="width:100%;height:88px;margin-top:10px;box-sizing:border-box;background:#0e1512;color:#e8efe9;border:1px solid #26302a;border-radius:8px;padding:8px;font:12px/1.6 ui-monospace,monospace;resize:vertical;word-break:break-all">' + esc(line) + '</textarea>' +
+        '<div style="display:flex;gap:8px;margin-top:10px"><button id="fvtvC" style="flex:1;cursor:pointer;font:600 13px system-ui;background:#3fbf8f;color:#06110c;border:0;border-radius:8px;padding:9px">Copy</button><button id="fvtvD" style="flex:1;cursor:pointer;font:600 13px system-ui;background:transparent;color:#3fbf8f;border:1px solid #3fbf8f;border-radius:8px;padding:9px">Download</button><button id="fvtvX" style="cursor:pointer;background:transparent;color:#8b9a90;border:1px solid #26302a;border-radius:8px;padding:9px 11px">✕</button></div>';
+      var ta = box.querySelector("textarea");
+      box.querySelector("#fvtvC").onclick = function () {
+        ta.focus(); ta.select(); var ok = false;
+        try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(line); ok = true; } } catch (e) {}
+        if (!ok) { try { document.execCommand("copy"); } catch (e) {} }
+        var b = box.querySelector("#fvtvC"); b.textContent = "Copied ✓"; setTimeout(function () { b.textContent = "Copy"; }, 1400);
+      };
+      box.querySelector("#fvtvD").onclick = function () {
+        var bl = new Blob([line], { type: "text/plain;charset=utf-8" });
+        var a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = "watchlist.txt";
+        document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+      };
+      box.querySelector("#fvtvX").onclick = function () { box.remove(); };
+    }
+    function step(r) {
+      if (pages >= MAX) { done(); return; }
+      S.textContent = "Fetching page " + (pages + 1) + "… " + list.length + " tickers so far";
+      fetch(location.pathname + "?" + baseQ + (r > 1 ? "&r=" + r : ""), { credentials: "same-origin" })
+        .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.text(); })
+        .then(function (html) {
+          pages++;
+          var re = /data-boxover-ticker="([A-Z0-9.\-]+)"/g, m, added = 0;
+          while (m = re.exec(html)) { var t = m[1]; if (!seen[t]) { seen[t] = 1; list.push(t); added++; } }
+          if (added < 20) { done(); return; }            /* short page = last page (free tier = 20/page) */
+          setTimeout(function () { step(r + 20); }, 500); /* gentle */
+        })
+        .catch(function (err) {
+          S.innerHTML = "Stopped: " + esc(err.message) + '<br><span style="color:#8b9a90">' + list.length + " collected so far.</span>";
+          if (list.length) done();
+        });
+    }
+    step(1);
+  }
+
+  var bmk = document.getElementById("bmk");
+  if (bmk) bmk.setAttribute("href", "javascript:(" + fvtvCollect.toString() + ")();");
+  var cc = document.getElementById("copyConsole"), msg = document.getElementById("consoleMsg");
+  if (cc) cc.addEventListener("click", function () {
+    var code = "(" + fvtvCollect.toString() + ")();";
+    var show = function (t) { if (msg) { msg.hidden = false; msg.textContent = t; } };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code)
+        .then(function () { show("Copied. On your Finviz screener page, open the browser console (Option+Cmd+J), paste, and press Enter."); })
+        .catch(function () { show("Couldn't copy automatically — long-press / right-click the button to copy its link instead."); });
+    } else { show("Clipboard unavailable here — right-click the green button and Copy Link instead."); }
+  });
+})();
+</script>
+</body>
+</html>
