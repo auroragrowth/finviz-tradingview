@@ -21,7 +21,7 @@
   var box = document.createElement("div");
   box.id = "fvtvBox";
   box.style.cssText = "position:fixed;top:16px;right:16px;z-index:2147483647;width:330px;font:13px/1.5 system-ui,-apple-system,sans-serif;background:#0C1E42;color:#F1F5F9;border:1px solid #22345C;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,.55);padding:16px";
-  box.innerHTML = '<div style="font:600 11px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#22D3EE;margin-bottom:10px">Finviz → Watchlist</div><div id="fvtvS">Starting…</div>';
+  box.innerHTML = '<img src="https://auroragrowth.github.io/finviz-tradingview/aurora-logo.png" alt="Aurora Growth Academy" style="height:24px;width:auto;display:block;margin-bottom:10px" onerror="this.style.display=\'none\'"><div style="font:600 10px/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#22D3EE;margin-bottom:10px">Finviz → Watchlist</div><div id="fvtvS">Starting…</div>';
   document.body.appendChild(box);
   var S = box.querySelector("#fvtvS");
 
