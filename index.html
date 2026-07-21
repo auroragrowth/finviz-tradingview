@@ -310,7 +310,8 @@
   .bmk {
     display: inline-flex; align-items: center; gap: 7px; margin: 4px 0;
     font-family: var(--mono); font-size: 14px; font-weight: 600; text-decoration: none;
-    background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent);
+    background: linear-gradient(90deg, var(--aurora1), var(--aurora2));
+    color: #06121f; border: 1px solid transparent;
     padding: 9px 16px; border-radius: 9px; cursor: grab; user-select: none;
     box-shadow: var(--shadow);
   }
@@ -335,7 +336,7 @@
   <details class="howto">
     <summary>How to use <span class="tag">Start here</span></summary>
     <div class="howto-body">
-      <div class="howto-setup"><b>One-time setup:</b> in the <b>Auto-collect</b> panel below, drag the green <b>▸ Finviz → Watchlist</b> button up onto your browser's bookmarks bar. You only ever do this once.</div>
+      <div class="howto-setup"><b>One-time setup:</b> in the <b>Auto-collect</b> panel below, drag the <b>▸ Finviz → Watchlist</b> button (the bright aurora one) up onto your browser's bookmarks bar. You only ever do this once.</div>
 
       <h4>Every time — from screen to watchlist</h4>
       <ol>
@@ -389,7 +390,7 @@
         <p class="hint">Skip the copy-paste. Drag this button to your bookmarks bar once; then, on your Finviz screener page, click it — it pages through every result, de-dupes, and shows the finished list ready to Copy or Download.</p>
         <a class="bmk" id="bmk" href="#" onclick="return false">▸ Finviz → Watchlist</a>
         <ol class="steps">
-          <li>Drag the green button up to your browser's bookmarks bar.</li>
+          <li>Drag the <b>▸ Finviz → Watchlist</b> button up to your browser's bookmarks bar.</li>
           <li>Open your screen on Finviz — use an <b>Open in Finviz</b> link above, or your own saved screen. Any view is fine.</li>
           <li><b>While that Finviz tab is showing</b>, click the bookmark (not on this page — it only works on Finviz). A panel appears with the full list — hit <b>Copy</b> or <b>Download</b>.</li>
         </ol>
@@ -571,7 +572,7 @@
     var pasteAlert = $("pasteAlert");
     if (val.trim() && looksLikeCode(val)) {
       pasteAlert.hidden = false;
-      pasteAlert.innerHTML = "⚠ That looks like a URL or page code, not a ticker list — don't paste the tool's address or source here. Use the green <b>Finviz → Watchlist</b> bookmarklet, or copy the tickers from Finviz's <b>Tickers</b> view.";
+      pasteAlert.innerHTML = "⚠ That looks like a URL or page code, not a ticker list — don't paste the tool's address or source here. Use the <b>▸ Finviz → Watchlist</b> bookmarklet, or copy the tickers from Finviz's <b>Tickers</b> view.";
       $("vFound").textContent = "0"; $("vUnique").textContent = "0"; $("vDupes").textContent = "0";
       $("vCap").textContent = "0/" + CAP;
       output.value = "";
@@ -764,7 +765,7 @@
       navigator.clipboard.writeText(code)
         .then(function () { show("Copied. On your Finviz screener page, open the browser console (Option+Cmd+J), paste, and press Enter."); })
         .catch(function () { show("Couldn't copy automatically — long-press / right-click the button to copy its link instead."); });
-    } else { show("Clipboard unavailable here — right-click the green button and Copy Link instead."); }
+    } else { show("Clipboard unavailable here — right-click the ▸ Finviz → Watchlist button and Copy Link instead."); }
   });
 })();
 </script>
