@@ -3,60 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Finviz → TradingView watchlist</title>
+<title>Finviz → TradingView · Aurora Growth Academy</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f7f8f6;
-    --surface: #ffffff;
-    --surface-2: #f1f3f0;
-    --ink: #14201b;
-    --muted: #5c6b63;
-    --border: #e2e6e1;
-    --accent: #0f7a5a;
-    --accent-ink: #ffffff;
-    --accent-soft: #e4f2ec;
-    --good: #0f7a5a;
-    --warn: #a9720a;
-    --warn-soft: #f6ecd6;
-    --bad: #c0442f;
-    --bad-soft: #f6e3df;
-    --shadow: 0 1px 2px rgba(20,32,27,.06), 0 8px 24px rgba(20,32,27,.05);
+    --bg: #F7F9FC;
+    --surface: #FFFFFF;
+    --surface-2: #EEF3FA;
+    --ink: #0C1B33;
+    --muted: #55647C;
+    --border: #DCE3EE;
+    --accent: #0A7C93;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E3F4F8;
+    --accent2: #7C5CE0;
+    --good: #0A7C93;
+    --warn: #A9720A;
+    --warn-soft: #F6ECD6;
+    --bad: #C0344C;
+    --bad-soft: #FBE6EB;
+    --shadow: 0 1px 2px rgba(12,27,51,.06), 0 10px 30px rgba(12,27,51,.06);
     --radius: 12px;
-    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
-    --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --aurora1: #22D3EE;
+    --aurora2: #A78BFA;
+    --display: 'Fraunces', Georgia, serif;
+    --mono: 'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0e1512;
-      --surface: #16201c;
-      --surface-2: #1c2723;
-      --ink: #e8efe9;
-      --muted: #8b9a90;
-      --border: #26302a;
-      --accent: #3fbf8f;
-      --accent-ink: #06110c;
-      --accent-soft: #16302549;
-      --good: #3fbf8f;
-      --warn: #e0b04a;
-      --warn-soft: #2c2513;
-      --bad: #e07a63;
-      --bad-soft: #2e1a15;
-      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+      --bg: #020617;
+      --surface: #0C1E42;
+      --surface-2: #13295A;
+      --ink: #F1F5F9;
+      --muted: #94A3B8;
+      --border: #22345C;
+      --accent: #22D3EE;
+      --accent-ink: #04121B;
+      --accent-soft: rgba(34,211,238,.12);
+      --accent2: #A78BFA;
+      --good: #22D3EE;
+      --warn: #E0B04A;
+      --warn-soft: #2C2513;
+      --bad: #FB7185;
+      --bad-soft: #2E1620;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 34px rgba(0,0,0,.45);
     }
   }
   :root[data-theme="light"] {
-    --bg: #f7f8f6; --surface: #ffffff; --surface-2: #f1f3f0; --ink: #14201b;
-    --muted: #5c6b63; --border: #e2e6e1; --accent: #0f7a5a; --accent-ink: #ffffff;
-    --accent-soft: #e4f2ec; --good: #0f7a5a; --warn: #a9720a; --warn-soft: #f6ecd6;
-    --bad: #c0442f; --bad-soft: #f6e3df;
-    --shadow: 0 1px 2px rgba(20,32,27,.06), 0 8px 24px rgba(20,32,27,.05);
+    --bg: #F7F9FC; --surface: #FFFFFF; --surface-2: #EEF3FA; --ink: #0C1B33;
+    --muted: #55647C; --border: #DCE3EE; --accent: #0A7C93; --accent-ink: #FFFFFF;
+    --accent-soft: #E3F4F8; --accent2: #7C5CE0; --good: #0A7C93; --warn: #A9720A; --warn-soft: #F6ECD6;
+    --bad: #C0344C; --bad-soft: #FBE6EB;
+    --shadow: 0 1px 2px rgba(12,27,51,.06), 0 10px 30px rgba(12,27,51,.06);
   }
   :root[data-theme="dark"] {
-    --bg: #0e1512; --surface: #16201c; --surface-2: #1c2723; --ink: #e8efe9;
-    --muted: #8b9a90; --border: #26302a; --accent: #3fbf8f; --accent-ink: #06110c;
-    --accent-soft: #16302549; --good: #3fbf8f; --warn: #e0b04a; --warn-soft: #2c2513;
-    --bad: #e07a63; --bad-soft: #2e1a15;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    --bg: #020617; --surface: #0C1E42; --surface-2: #13295A; --ink: #F1F5F9;
+    --muted: #94A3B8; --border: #22345C; --accent: #22D3EE; --accent-ink: #04121B;
+    --accent-soft: rgba(34,211,238,.12); --accent2: #A78BFA; --good: #22D3EE; --warn: #E0B04A; --warn-soft: #2C2513;
+    --bad: #FB7185; --bad-soft: #2E1620;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 34px rgba(0,0,0,.45);
   }
 
   * { box-sizing: border-box; }
@@ -79,9 +88,19 @@
     font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
     text-transform: uppercase; color: var(--muted);
   }
+  .wordmark {
+    font-family: var(--ui); font-size: 12.5px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; align-self: flex-start; width: fit-content;
+    background: linear-gradient(90deg, var(--aurora1), var(--aurora2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  body::before {
+    content: ""; position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 20;
+    background: linear-gradient(90deg, var(--aurora1), var(--accent2), var(--aurora2));
+  }
   h1 {
-    margin: 0; font-size: clamp(24px, 3.5vw, 34px); font-weight: 650;
-    letter-spacing: -.02em; text-wrap: balance;
+    margin: 0; font-family: var(--display); font-size: clamp(26px, 3.6vw, 38px); font-weight: 600;
+    letter-spacing: -.01em; text-wrap: balance;
   }
   h1 .arrow { color: var(--accent); font-family: var(--mono); font-weight: 500; }
   .sub { color: var(--muted); font-size: 14.5px; max-width: 62ch; }
@@ -267,7 +286,7 @@
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <span class="eyebrow">Screener → Watchlist</span>
+      <span class="wordmark">Aurora Growth Academy</span>
       <h1>Finviz <span class="arrow">→</span> TradingView</h1>
       <p class="sub">Paste messy Finviz screener output — a Tickers-view block, a plain list, or several pages at once. Get one clean comma-separated line, ready to save as a <code style="font-family:var(--mono)">.txt</code> and upload to a TradingView watchlist.</p>
     </div>
@@ -374,6 +393,10 @@
     <div><b>Verified against TradingView's help centre:</b> upload wants a <code>.txt</code> file, symbols <b>comma-separated</b>, with an <code>EXCHANGE:TICKER</code> prefix recommended (bare US tickers usually resolve too). Hard cap is <b>1,000 symbols per watchlist</b> — split anything larger.</div>
     <div>Import path in TradingView: click the watchlist name in the right toolbar → <b>Import list…</b> → pick your <code>.txt</code>.</div>
     <div>Everything runs in your browser — nothing is sent anywhere.</div>
+    <div style="margin-top:6px; display:flex; align-items:center; gap:8px;">
+      <svg width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="none"/><path d="M5 23 A11 11 0 0 1 27 23" fill="none" stroke="var(--aurora1)" stroke-width="2.6" stroke-linecap="round"/><path d="M10 23 A6 6 0 0 1 22 23" fill="none" stroke="var(--accent2)" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <span>A tool from <b>Aurora Growth Academy</b></span>
+    </div>
   </footer>
 </div>
 

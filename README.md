@@ -1,5 +1,7 @@
 # Finviz → TradingView watchlist
 
+*A tool from **Aurora Growth Academy**.*
+
 A tiny, single-file web tool that turns messy [Finviz](https://finviz.com) screener
 output into a clean, de-duplicated, comma-separated ticker list ready to **Import** into
 a [TradingView](https://www.tradingview.com) watchlist.
