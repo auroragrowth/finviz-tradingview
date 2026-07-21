@@ -312,8 +312,8 @@
         <a class="bmk" id="bmk" href="#" onclick="return false">▸ Finviz → Watchlist</a>
         <ol class="steps">
           <li>Drag the green button up to your browser's bookmarks bar.</li>
-          <li>Open your screen in Finviz (use an <b>Open in Finviz</b> link above) — any view is fine.</li>
-          <li>Click the bookmark. A panel shows the full list — hit <b>Copy</b> or <b>Download</b>, then paste it above if you want the extras here (exchange prefix, cap check).</li>
+          <li>Open your screen on Finviz — use an <b>Open in Finviz</b> link above, or your own saved screen. Any view is fine.</li>
+          <li><b>While that Finviz tab is showing</b>, click the bookmark (not on this page — it only works on Finviz). A panel appears with the full list — hit <b>Copy</b> or <b>Download</b>.</li>
         </ol>
         <button class="ghost" id="copyConsole" type="button">Can't drag it? Copy the console version</button>
         <p class="note-inline" id="consoleMsg" hidden></p>
@@ -381,7 +381,7 @@
 (function () {
   "use strict";
 
-  var FINVIZ_BASE = "https://finviz.com/screener.ashx?";
+  var FINVIZ_BASE = "https://finviz.com/screener?";
   var PRESETS = {
     f13: {
       name: "F13 — strict quality-growth",
@@ -667,68 +667,16 @@
 </script>
 
 <script>
-/* Auto-collect bookmarklet. fvtvCollect() is never called here — it is
-   stringified onto the bookmark's href and runs on finviz.com. */
+/* The bookmarklet is a thin LOADER: it injects collector.js from this site onto the
+   Finviz page, so the collector's code always comes from the server. Fixing a bug in
+   collector.js updates everyone's bookmark automatically — no re-drag needed. */
 (function () {
-  function fvtvCollect() {
-    if (!/(^|\.)finviz\.com$/.test(location.hostname) || !/screener\.ashx/i.test(location.pathname)) {
-      alert("Open your Finviz screener first (finviz.com/screener.ashx with your filters), then click this."); return;
-    }
-    var params = new URLSearchParams(location.search);
-    params.set("v", "111"); params.delete("r");
-    var baseQ = params.toString();
-    var seen = Object.create(null), list = [], pages = 0, MAX = 100;
-    var box = document.createElement("div");
-    box.style.cssText = "position:fixed;top:16px;right:16px;z-index:2147483647;width:330px;font:13px/1.5 system-ui,-apple-system,sans-serif;background:#16201c;color:#e8efe9;border:1px solid #26302a;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,.55);padding:16px";
-    box.innerHTML = '<div style="font:600 11px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#3fbf8f;margin-bottom:10px">Finviz → Watchlist</div><div id="fvtvS">Starting…</div>';
-    document.body.appendChild(box);
-    var S = box.querySelector("#fvtvS");
-    function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-    function done() {
-      var line = list.join(",");
-      var over = list.length > 1000 ? ' · <span style="color:#e0b04a">over TradingView’s 1000 cap, split it</span>' : "";
-      S.innerHTML = '<div><b style="font:600 22px ui-monospace,monospace;color:#3fbf8f">' + list.length + '</b> tickers' + over + '</div>' +
-        '<textarea readonly style="width:100%;height:88px;margin-top:10px;box-sizing:border-box;background:#0e1512;color:#e8efe9;border:1px solid #26302a;border-radius:8px;padding:8px;font:12px/1.6 ui-monospace,monospace;resize:vertical;word-break:break-all">' + esc(line) + '</textarea>' +
-        '<div style="display:flex;gap:8px;margin-top:10px"><button id="fvtvC" style="flex:1;cursor:pointer;font:600 13px system-ui;background:#3fbf8f;color:#06110c;border:0;border-radius:8px;padding:9px">Copy</button><button id="fvtvD" style="flex:1;cursor:pointer;font:600 13px system-ui;background:transparent;color:#3fbf8f;border:1px solid #3fbf8f;border-radius:8px;padding:9px">Download</button><button id="fvtvX" style="cursor:pointer;background:transparent;color:#8b9a90;border:1px solid #26302a;border-radius:8px;padding:9px 11px">✕</button></div>';
-      var ta = box.querySelector("textarea");
-      box.querySelector("#fvtvC").onclick = function () {
-        ta.focus(); ta.select(); var ok = false;
-        try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(line); ok = true; } } catch (e) {}
-        if (!ok) { try { document.execCommand("copy"); } catch (e) {} }
-        var b = box.querySelector("#fvtvC"); b.textContent = "Copied ✓"; setTimeout(function () { b.textContent = "Copy"; }, 1400);
-      };
-      box.querySelector("#fvtvD").onclick = function () {
-        var bl = new Blob([line], { type: "text/plain;charset=utf-8" });
-        var a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = "watchlist.txt";
-        document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-      };
-      box.querySelector("#fvtvX").onclick = function () { box.remove(); };
-    }
-    function step(r) {
-      if (pages >= MAX) { done(); return; }
-      S.textContent = "Fetching page " + (pages + 1) + "… " + list.length + " tickers so far";
-      fetch(location.pathname + "?" + baseQ + (r > 1 ? "&r=" + r : ""), { credentials: "same-origin" })
-        .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.text(); })
-        .then(function (html) {
-          pages++;
-          var re = /data-boxover-ticker="([A-Z0-9.\-]+)"/g, m, added = 0;
-          while (m = re.exec(html)) { var t = m[1]; if (!seen[t]) { seen[t] = 1; list.push(t); added++; } }
-          if (added < 20) { done(); return; }            /* short page = last page (free tier = 20/page) */
-          setTimeout(function () { step(r + 20); }, 500); /* gentle */
-        })
-        .catch(function (err) {
-          S.innerHTML = "Stopped: " + esc(err.message) + '<br><span style="color:#8b9a90">' + list.length + " collected so far.</span>";
-          if (list.length) done();
-        });
-    }
-    step(1);
-  }
-
+  var LOADER = "javascript:(function(){var d=document,s=d.createElement('script');s.src='https://auroragrowth.github.io/finviz-tradingview/collector.js?_='+Date.now();s.onerror=function(){alert('Could not load the collector - check your connection and try again.');};(d.body||d.documentElement).appendChild(s);})();";
   var bmk = document.getElementById("bmk");
-  if (bmk) bmk.setAttribute("href", "javascript:(" + fvtvCollect.toString() + ")();");
+  if (bmk) bmk.setAttribute("href", LOADER);
   var cc = document.getElementById("copyConsole"), msg = document.getElementById("consoleMsg");
   if (cc) cc.addEventListener("click", function () {
-    var code = "(" + fvtvCollect.toString() + ")();";
+    var code = LOADER.replace(/^javascript:/, "");
     var show = function (t) { if (msg) { msg.hidden = false; msg.textContent = t; } };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(code)
